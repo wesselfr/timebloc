@@ -8,6 +8,8 @@ fn main() {
         visible_hours_subdivision: 4,
     };
 
+    save_config(&config);
+
     assert!(config.visible_hours_end <= 24);
     assert!(config.visible_hours_start < config.visible_hours_end);
 
@@ -26,6 +28,11 @@ fn main() {
                 is_free = false
             }
         }
-        print_timeslot(i, is_free, config.visible_hours_subdivision.into(), &current_time);
+        print_timeslot(
+            i,
+            is_free,
+            config.visible_hours_subdivision.into(),
+            &current_time,
+        );
     }
 }
