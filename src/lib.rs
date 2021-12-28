@@ -1,12 +1,12 @@
 extern crate colored;
-use std::fs::{File};
-use std::io::{Write, Read};
+use std::fs::File;
+use std::io::{Read, Write};
 use std::{env, fs::create_dir};
 
-use chrono::{self, DateTime, Local, Timelike, Datelike};
+use chrono::{self, DateTime, Datelike, Local, Timelike};
 use colored::*;
 use serde::{Deserialize, Serialize};
-use serde_json::{Result};
+use serde_json::Result;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -39,12 +39,12 @@ pub fn save_config(config: &Config) -> Result<()> {
     Ok(())
 }
 
-fn load_config_from_string(contents: &String) -> Config{
+fn load_config_from_string(contents: &String) -> Config {
     let config: Config = serde_json::from_str(&contents).expect("Error while loading config.");
     config
 }
 
-pub fn load_config() -> Result<Config>{
+pub fn load_config() -> Result<Config> {
     let config: Config;
 
     let mut directory = env::temp_dir();
@@ -53,12 +53,11 @@ pub fn load_config() -> Result<Config>{
     let file_path = directory.join("config.json");
 
     let file = File::open(file_path);
-    if file.is_ok(){
+    if file.is_ok() {
         let mut contents = String::new();
         file.unwrap().read_to_string(&mut contents).unwrap();
         config = load_config_from_string(&contents);
-    }
-    else{
+    } else {
         // Create and save default config.
         config = Config {
             visible_hours_start: 8,
@@ -70,7 +69,7 @@ pub fn load_config() -> Result<Config>{
     Ok(config)
 }
 
-pub fn save_appointments(appointments: &Vec<TimeBlock>) -> Result<()>{
+pub fn save_appointments(appointments: &Vec<TimeBlock>) -> Result<()> {
     let j = serde_json::to_string(&appointments)?;
 
     let mut directory = env::temp_dir();
@@ -98,25 +97,25 @@ fn load_appointments_from_string(data: &String) -> Result<Vec<TimeBlock>> {
     appointments
 }
 
-pub fn load_appointments() -> Vec<TimeBlock>{
+pub fn load_appointments() -> Vec<TimeBlock> {
     let mut appointments: Vec<TimeBlock> = Vec::new();
     let mut directory = env::temp_dir();
     directory.push("timebloc");
 
-    if !directory.is_dir(){
-       return appointments;
+    if !directory.is_dir() {
+        return appointments;
     }
 
     let file_path = directory.join("appointments.json");
 
     let mut file = File::open(file_path).expect("Unable to open the file");
     let mut contents = String::new();
-    file.read_to_string(&mut contents).expect("Unable to read the file");
-    
+    file.read_to_string(&mut contents)
+        .expect("Unable to read the file");
+
     appointments = load_appointments_from_string(&contents).expect("Unable to load appointments");
     return appointments;
 }
-
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TimeBlock {
@@ -141,12 +140,38 @@ impl TimeBlock {
         }
         false
     }
+    pub fn is_today(&self) -> bool {
+        if self.date == get_date_formatted(&chrono::offset::Local::now()) {
+            return true;
+        }
+        false
+    }
 }
 
 // Returns the date formatted as YYYY MM DD
-pub fn get_date_formatted(date: &DateTime<Local>) -> u32{
+pub fn get_date_formatted(date: &DateTime<Local>) -> u32 {
     let format: u32 = date.year() as u32 * 10000 + date.month() * 100 + date.day();
     format
+}
+
+pub fn print_all_timeslots(
+    current: &DateTime<Local>,
+    appointments: &Vec<TimeBlock>,
+    start: u8,
+    end: u8,
+    subdivision: u32,
+) {
+    for i in start..end {
+        let mut is_free = true;
+        for timeblock in appointments {
+            if timeblock.is_today() {
+                if timeblock.within_timeblock(i) {
+                    is_free = false
+                }
+            }
+        }
+        print_timeslot(i, is_free, subdivision, &current);
+    }
 }
 
 pub fn print_timeslot(hour: u8, is_free: bool, subdivision: u32, current: &DateTime<Local>) {
