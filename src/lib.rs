@@ -108,13 +108,26 @@ pub fn load_appointments() -> Vec<TimeBlock> {
 
     let file_path = directory.join("appointments.json");
 
-    let mut file = File::open(file_path).expect("Unable to open the file");
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Unable to read the file");
+    let mut file = File::open(file_path);
 
-    appointments = load_appointments_from_string(&contents).expect("Unable to load appointments");
-    return appointments;
+    match file {
+        Ok(_) => {
+            let mut contents = String::new();
+            file.expect("Error opening file")
+                .read_to_string(&mut contents)
+                .expect("Unable to read the file");
+
+            appointments =
+                load_appointments_from_string(&contents).expect("Unable to load appointments");
+            return appointments;
+        }
+        Err(_) => {
+            let mut temp_data = Vec::new();
+            temp_data.push(TimeBlock::new(15, 16));
+            save_appointments(&temp_data).expect("Error while creating file...");
+            return load_appointments();
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]

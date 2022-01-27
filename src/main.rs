@@ -40,7 +40,13 @@ fn main() {
     }
 
     let current_time = chrono::offset::Local::now();
-    print_all_timeslots(&current_time, &appointments, config.visible_hours_start, config.visible_hours_end, config.visible_hours_subdivision as u32);
+    print_all_timeslots(
+        &current_time,
+        &appointments,
+        config.visible_hours_start,
+        config.visible_hours_end,
+        config.visible_hours_subdivision as u32,
+    );
 
     loop {
         let mut s = String::new();
