@@ -146,8 +146,23 @@ fn main() {
                 break;
             }
 
-            Some(&_) => todo!(),
-            None => todo!(),
+            Some("help") => {
+                print!("\x1B[2J\x1B[1;1H");
+                println!("Overview commands: ");
+                println!("show [start] [end]    - Shows planned tasks between start and end date.");
+                println!("new [start] [end]     - Create a new planned task");
+                println!("remove [start] [end]  - Remove a planned tasks");
+                println!("clear                 - Clears the screen");
+                println!("cls                   - Clears the screen");
+                println!("exit                  - Closes Timebloc");
+            }
+
+            Some(&_) => {
+                println!("Command not found. Type 'help' for all supported commands");
+            }
+            None => {
+                println!("Command not found. Type 'help' for all supported commands");
+            }
         }
     }
 }
